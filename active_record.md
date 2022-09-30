@@ -28,7 +28,8 @@
 
 If the database transactions for schema-changing statements, migrations will be wrapped in a transaction.
 
-If the database does not support such transactions, then when a migration fails, the parts that succeeded before failure will not be rolled back, you need to do this yourself.
+If the database does not support such transactions, then when a migration fails, 
+the parts that succeeded before failure will not be rolled back, you need to do this yourself.
 
 ### Telling AR how to reverse
 
@@ -195,3 +196,93 @@ end
 
 ### Custom validations
 
+## Associations
+
+An author has many books.
+
+```ruby
+class Author < ApplicationRecord
+  has_many :books, dependent: :destroy
+end
+
+class Book < ApplicationRecord
+  belongs_to :author
+end
+
+# Creating a book belonging to a partiuclar author
+@book = @author.books.create(published_at: Time.now)
+
+# destroying an author deletes all its books as well
+@author.destroy
+```
+
+### The types of associations
+
+Rails supports six types of associations:
+
+- `belongs_to`
+- `has_one`
+
+  The has_one relationship says that one of something is yours - that is, that something points back to you. For example, it makes more sense to say that a supplier owns an account than that an account owns a supplier.
+
+- `has_many`
+- `has_many :through` 
+  
+  the declaring model can be matched with zero or more instances of another model by proceeding through a third model.
+  
+  ```ruby
+  class Physician < ApplicationRecord
+    has_many :appointments
+    has_many :patients, through: :appointments
+  end
+
+  class Appointment < ApplicationRecord
+    belongs_to :physician
+    belongs_to :patient
+  end
+
+  class Patient < ApplicationRecord
+    has_many :appointments
+    has_many :physicians, through: :appointments
+  end
+  ```
+
+  The collection of join models can be managed via the has_many association methods. For example, if you assign:
+
+  `physician.patients = patients`
+
+  Then new join models are automatically created for the newly associated objects. If some that existed previously are now missing, then their join rows are automatically deleted.
+
+  Automatic deletion of join models is direct, no destroy callbacks are triggered.
+
+- `has_one :through`
+- `has_and_belongs_to_many`
+
+  ```ruby
+  class Assembly < ApplicationRecord
+    has_and_belongs_to_many :parts
+  end
+
+  class Part < ApplicationRecord
+    has_and_belongs_to_many :assemblies
+  end
+  ```
+
+-----------------
+
+> Questions
+
+-------------------
+
+> This relation can be bi-directional when used in combination with belongs_to on the other model.
+
+in a rails bi-directional relation, well the bi-directionality be reflected
+in the database schema?
+
+-----------------
+
+You are building the profile tab for a new user on your site. You are already storing your user’s username and email, but now you want to collect demographic information like city, state, country, age and gender. Think – how many profiles should a user have? How would you relate this to the User model?
+
+-----------------
+
+Creating a post by supplying user id manually `p = Post.new(user_id: 1, link: "somthing.com")` does not display it when I query `u.posts`
