@@ -99,3 +99,55 @@ class LoginsController < ApplicationController
   end
 end
 ```
+
+## Rendering Json and XML
+
+```rb
+class UsersController < ApplicationController
+  def index
+    @users = User.all
+    respond_to do |format|
+      format.html # index.html.erb
+      format.xml  { render xml: @users }
+      format.json { render json: @users }
+    end
+  end
+end
+```
+
+## Streaming and File download
+
+```rb
+require "prawn"
+class ClientsController < ApplicationController
+  # Generates a PDF document with information on the client and
+  # returns it. The user will get the PDF as a file download.
+  def download_pdf
+    client = Client.find(params[:id])
+    send_data generate_pdf(client),
+              filename: "#{client.name}.pdf",
+              type: "application/pdf"
+  end
+
+  private
+    def generate_pdf(client)
+      Prawn::Document.new do
+        text client.name, align: :center
+        text "Address: #{client.address}"
+        text "Email: #{client.email}"
+      end.render
+    end
+end
+```
+
+```rb
+class ClientsController < ApplicationController
+  # Stream a file that has already been generated and stored on disk.
+  def download_pdf
+    client = Client.find(params[:id])
+    send_file("#{Rails.root}/files/clients/#{client.id}.pdf",
+              filename: "#{client.name}.pdf",
+              type: "application/pdf")
+  end
+end
+```

@@ -1,2 +1,3 @@
 - [ ] SASS
-- Routers - Request-Based Constraints
+- [ ] Routers - Request-Based Constraints
+- [ ] Securing Rails Applications
