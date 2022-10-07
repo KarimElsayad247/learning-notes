@@ -174,6 +174,23 @@ get 'photos/:id', to: 'photos#show', id: /[A-Z]\d{5}/
 
 ## Customizing Resourceful Routes
 
+- A `namespace` is a type of scope with `:as`, `:module` and `:path` applied.
+
+```rb
+namespace "admin" do
+  resources :contexts
+end
+```
+
+is the same as
+
+```rb
+scope "/admin", as: "admin", module: "admin" do
+  resources :contexts
+end
+```
+
+
 ```rb
 # use custom controller
 resources :photos, controller: 'images'
@@ -186,7 +203,7 @@ resources :photos, constraints: { id: /[A-Z][A-Z][0-9]+/ }
 
 # You can specify a single constraint to apply to 
 # a number of routes by using the block form
-constraints(id: /[A-Z][A-Z][0-9]+/) do
+constraints(id: /[A-Z][A-Z][0-9]+/) do  ///// # this regex breaks syntax highlighting in vscode 
   resources :photos
   resources :accounts
 end
@@ -230,3 +247,30 @@ resources :photos, except: :destroy
 
 ```
 
+## Route globbing and wildcard matching
+
+This route would match `photos/12` or `/photos/long/path/to/12`, setting `params[:other]` to "12" or "long/path/to/12". The segments prefixed with a star are called "wildcard segments".
+
+```rb
+get 'photos/*other', to: 'photos#unknown'
+```
+
+would match `books/some/section/last-words-a-memoir` with `params[:section]` equals `'some/section'`, and `params[:title]` equals `'last-words-a-memoir'`.
+
+```rb
+get 'books/*section/:title', to: 'books#show'
+```
+
+## Redirection
+
+```rb
+# redirect any path to another path
+# returns response 301 moved permanently
+get '/stories', to: redirect('/articles')
+
+# You can also reuse dynamic segments
+get '/stories/:name', to: redirect('/articles/%{name}')
+
+# use the :status option to change the response status:
+get '/stories/:name', to: redirect('/articles/%{name}', status: 302)
+```
